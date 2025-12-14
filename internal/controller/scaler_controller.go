@@ -59,6 +59,7 @@ func (r *ScalerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	log := ctrl.LoggerFrom(ctx).WithValues("scaler", req.NamespacedName)
 	_ = log
 	log.Info("Scaler resource reconciled successfully")
+
 	scaler := &apiv1alpha1.Scaler{}
 	error := r.Get(ctx, req.NamespacedName, scaler)
 
@@ -99,9 +100,23 @@ func (r *ScalerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		log.Info("Within scaling window, scaling to desired replicas", "DesiredReplicas", desiredReplicas)
 	} else {
 		log.Info("Outside scaling window, no scaling action taken")
+		for _, deploy := range scaler.Spec.Deployments {
+			deployment := &appsv1.Deployment{}
+
+			error := r.Get(ctx, types.NamespacedName{Namespace: deploy.Namespace, Name: deploy.Name}, deployment)
+
+			if error != nil {
+				log.Error(error, "Failed to get Deployment", "Deployment.Namespace", deploy.Namespace, "Deployment.Name", deploy.Name)
+				return ctrl.Result{}, error
+			}
+
+			*deployment.Spec.Replicas = scaler.Spec.OffPeakReplicas
+			r.Update(ctx, deployment)
+		}
+		log.Info("Scaling to off-peak replicas", "OffPeakReplicas", scaler.Spec.OffPeakReplicas)
 	}
 
-	log.Info("Scaler Spec Details", "StartTime", startTime, "EndTime", endTime, "DesiredReplicas", desiredReplicas)
+	log.Info("Scaler Spec Details", "StartTime", startTime, "EndTime", endTime, "DesiredReplicas", desiredReplicas, "OffPeakReplicas", scaler.Spec.OffPeakReplicas)
 
 	return ctrl.Result{RequeueAfter: time.Duration(30 * time.Second)}, nil
 }

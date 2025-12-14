@@ -31,10 +31,11 @@ type ScalerSpec struct {
 	// 	Foo is an example field of Scaler. Edit scaler_types.go to remove/update
 	//     	Foo string `json:"foo,omitempty"`
 
-	StartTime   int32            `json:"start,omitempty"`
-	EndTime     int32            `json:"end,omitempty"`
-	Replicas    int32            `json:"replicas,omitempty"`
-	Deployments []NameSpacedName `json:"deployments,omitempty"`
+	StartTime       int32            `json:"start,omitempty"`
+	EndTime         int32            `json:"end,omitempty"`
+	Replicas        int32            `json:"replicas,omitempty"`
+	OffPeakReplicas int32            `json:"offPeakReplicas,omitempty"`
+	Deployments     []NameSpacedName `json:"deployments,omitempty"`
 }
 
 type NameSpacedName struct {

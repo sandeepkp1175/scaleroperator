@@ -10,6 +10,7 @@ spec:
   start: 0
   end: 10
   replicas: 5
+  offPeakReplicas: 2
   deployments:
     - name: nginx
       namespace: default
